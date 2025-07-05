@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>مملكة اركاديا</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;700&display=swap');
+    * {
+      box-sizing: border-box;
+      margin: 0; padding: 0;
+    }
+    body {
+      font-family: 'Almarai', sans-serif;
+      background: #121212;
+      color: #e0e0e0;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+    /* Loading bar */
+    #loading-bar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 0;
+      height: 4px;
+      background: #ff6f61;
+      z-index: 2000;
+      transition: width 0.3s ease;
+    }
+    header {
+      position: fixed;
+      width: 100%;
+      background: #1f1f2e;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.6);
+      z-index: 1000;
+      top: 0; left: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      transition: background 0.3s;
+    }
+    header.scrolled {
+      background: #2a2a40;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    }
+    header .logo {
+      font-weight: 700;
+      font-size: 1.7rem;
+      color: #ff6f61;
+      cursor: default;
+      user-select: none;
+    }
+    nav {
+      display: flex;
+      gap: 2rem;
+    }
+    nav a {
+      text-decoration: none;
+      color: #e0e0e0;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: color 0.3s;
+    }
+    nav a:hover {
+      color: #ff6f61;
+    }
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+    }
+    .menu-toggle span {
+      background: #e0e0e0;
+      height: 3px;
+      width: 25px;
+      margin: 4px 0;
+      border-radius: 2px;
+      transition: 0.3s;
+    }
+    @media (max-width: 768px) {
+      nav {
+        position: fixed;
+        right: 0;
+        top: 65px;
+        background: #1f1f2e;
+        flex-direction: column;
+        width: 200px;
+        padding: 1rem 0;
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+        box-shadow: -2px 0 5px rgba(0,0,0,0.5);
+        border-radius: 0 0 0 10px;
+        height: calc(100vh - 65px);
+      }
+      nav.active {
+        transform: translateX(0);
+      }
+      nav a {
+        padding: 1rem 2rem;
+        font-size: 1.2rem;
+      }
+      .menu-toggle {
+        display: flex;
+      }
+    }
+    main {
+      padding-top: 80px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    section {
+      padding: 2rem 1rem;
+      margin-bottom: 2rem;
+      background: #1f1f2e;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255 111 97 / 0.15);
+    }
+    section h2, section h3 {
+      color: #ff6f61;
+      margin-bottom: 1rem;
+    }
+    section p {
+      color: #ccc;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    #news .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: #2a2a40;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(255 111 97 / 0.2);
+      opacity: 0;
+      transform: translateY(50px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .card.scrolled {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      user-select: none;
+    }
+    .card-content {
+      padding: 1rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card-content h3 {
+      font-weight: 700;
+      margin-bottom: 0.7rem;
+    }
+    .card-content button {
+      background: #ff6f61;
+      border: none;
+      padding: 0.6rem 1rem;
+      color: white;
+      border-radius: 7px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .card-content button:hover {
+      background: #e05247;
+    }
+    /* زر العودة للأعلى */
+    #back-to-top {
+      position: fixed;
+      bottom: 40px;
+      left: 40px;
+      background: #ff6f61;
+      color: white;
+      border: none;
+      padding: 0.8rem 1rem;
+      font-size: 1.3rem;
+      border-radius: 50%;
+      cursor: pointer;
+      display: none;
+      box-shadow: 0 4px 10px rgba(255 111 97, 0.4);
+      z-index: 1100;
+      transition: background-color 0.3s ease;
+    }
+    #back-to-top:hover {
+      background: #e05247;
+    }
+    /* Accordion */
+    .accordion {
+      max-width: 800px;
+      margin: 0 auto;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .accordion-item {
+      background: #2a2a40;
+      border-bottom: 1px solid #444559;
+    }
+    .accordion-header {
+      padding: 1rem 1.5rem;
+      font-weight: 700;
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+    }
+    .accordion-header::after {
+      content: '+';
+      position: absolute;
+      left: 20px;
+      font-size: 1.3rem;
+      transition: transform 0.3s ease;
+    }
+    .accordion-header.active::after {
+      content: '-';
+      transform: rotate(180deg);
+    }
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      padding: 0 1.5rem;
+      transition: max-height 0.4s ease;
+      color: #ccc;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+    .accordion-content.open {
+      padding: 1rem 1.5rem;
+    }
+    /* معرض الصور */
+    #gallery {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+      gap: 1rem;
+    }
+    #gallery img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    #gallery img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(255 111 97, 0.6);
+    }
+    /* Lightbox */
+    #lightbox {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      z-index: 2000;
+    }
+    #lightbox.visible {
+      visibility: visible;
+      opacity: 1;
+    }
+    #lightbox img {
+      max-width: 90vw;
+      max-height: 80vh;
+      border-radius: 10px;
+      box-shadow: 0 0 20px #ff6f61;
+    }
+    #lightbox.close-btn {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 2rem;
+      color: white;
+      cursor: pointer;
+      user-select: none;
+    }
+    /* الفوتر */
+    footer {
+      background: #1f1f2e;
+      text-align: center;
+      padding: 1.5rem 1rem;
+      color: #999;
+      font-size: 0.9rem;
+      margin-top: 3rem;
+    }
+    footer .social {
+      margin: 0.5rem 0 1rem;
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+    }
+    footer .social a {
+      color: #ff6f61;
+      font-size: 1.5rem;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    footer .social a:hover {
+      color: #e05247;
+    }
+  </style>
+</head>
+<body>
+
+<div id="loading-bar"></div>
+
+<header id="header">
+  <div class="logo">مملكة اركاديا</div>
+  <div class="menu-toggle" id="menu-toggle">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+  <nav id="nav">
+    <a href="#home">الرئيسية</a>
+    <a href="#news">الأخبار</a>
+    <a href="#ranks">الرتب</a>
+    <a href="#guilds">النقابات</a>
+    <a href="#contact">تواصل</a>
+  </nav>
+</header>
+
+<main>
+
+  <section id="home" style="text-align: center;">
+    <h1>مرحباً بك في مملكة اركاديا</h1>
+    <p>اكتشف أخبار وأحداث المملكة وتعرف على النقابات والرتب المختلفة.</p>
+  </section>
+
+  <section id="news">
+    <h2> ما هي اركاديا</h2>
+    <div class="accordion-item">
+        <div class="accordion-header">اركاديا هي مملكة وتس جديدة تاسست يوم 2025-5-7 على يد يوهان المملكة حالبا تحت الانشاء على يد رتب خبرة في الممالك</div>
+        <div class="accordion-content">
+          <p>     .</p>
+        </div>
+    
+  </section>
+
+  <section id="ranks">
+    <h2>الرتب الامبراطورية</h2>
+    <div class="accordion">
+      <div class="accordion-item">
+        <div class="accordion-header">رتبة الامبراطور :يوهان </div>
+        <div class="accordion-content">
+          <p>هي رتبةالاعلى في المملكة  .</p>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <div class="accordion-header">رتبة نائب الامبراطور : غوجو-ناخت-كرولو </div>
+        <div class="accordion-content">
+          <p>النينجا المتوسطين المهرة الذين يقومون بمهام معقدة ولديهم خبرة قتالية.</p>
+        </div>
+      </div>
+    
+      </div>
+    </div>
+  </section>
+  <section id="ranks">
+    <h2>الرتب العليا</h2>
+    <div class="accordion">
+      <div class="accordion-item">
+        <div class="accordion-header">رتبة اللورد :ايرين </div>
+        <div class="accordion-content">
+          <p>     .</p>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <div class="accordion-header">رتبة  الفورست :اكازا</div>
+        <div class="accordion-content">
+          <p>         .</p>
+        </div>
+      </div>
+    <div class="accordion-item">
+        <div class="accordion-header">رتبة  الغوروسي :فارغة</div>
+        <div class="accordion-content">
+          <p>         .</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<section id="ranks">
+    <h2>الرتب الاستشارية</h2>
+    <div class="accordion">
+      <div class="accordion-item">
+        <div class="accordion-header">رتبة المستشار :ديو </div>
+        <div class="accordion-content">
+          <p>     .</p>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <div class="accordion-header">رتبة  نائب المستشار :داتش</div>
+        <div class="accordion-content">
+          <p>         .</p>
+        </div>
+      </div>
+    
+    </div>
+  </section>
+
+  <section id="guilds">
+    <h2>النقابات</h2>
+    <div class="accordion">
+      <div class="accordion-item">
+        <div class="accordion-header">نقابة مارفل </div>
+        <div class="accordion-content">
+          <p></p>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <div class="accordion-header">نقابة سكيرو</div>
+        <div class="accordion-content">
+          <p>    </p>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <div class="accordion-header">نقابة اندر</div>
+        <div class="accordion-content">
+          <p></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  
+
+
+    
+
+
